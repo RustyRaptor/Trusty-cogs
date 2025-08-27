@@ -183,8 +183,8 @@ class Starboard(StarboardEvents, commands.Cog):
         embed.set_image(url="attachment://starboard.png")
     
         return embed, file
-        @starboard.command(name="info", aliases=["list"])
-        @commands.bot_has_permissions(read_message_history=True, embed_links=True)
+    @starboard.command(name="info", aliases=["list"])
+    @commands.bot_has_permissions(read_message_history=True, embed_links=True)
     async def starboard_info(self, ctx: commands.Context) -> None:
         """
         Display info on starboards setup on the server.
