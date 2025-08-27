@@ -12,6 +12,7 @@ from redbot.core.utils.views import SimpleMenu
 from .converters import RealEmoji, StarboardExists
 from .events import StarboardEvents
 from .starboard_entry import FakePayload, StarboardEntry
+import io
 
 _ = Translator("Starboard", __file__)
 log = getLogger("red.trusty-cogs.Starboard")
