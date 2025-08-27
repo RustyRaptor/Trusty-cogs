@@ -103,9 +103,36 @@ class Starboard(StarboardEvents, commands.Cog):
             ).format(time=humanize_timedelta(timedelta=time))
         )
 
+    def generate_starboard_image(text: str) -> io.BytesIO:
+        """Generate a simple image with the given text and return as BytesIO."""
+        # Basic settings
+        font = ImageFont.load_default()
+        padding = 10
+    
+        # Calculate size based on text
+        lines = text.split("\n")
+        max_width = max(font.getbbox(line)[2] for line in lines) + padding * 2
+        total_height = (len(lines) * (font.size + 6)) + padding * 2
+    
+        # Create image (white background, black text)
+        image = Image.new("RGB", (max_width, total_height), "white")
+        draw = ImageDraw.Draw(image)
+    
+        y = padding
+        for line in lines:
+            draw.text((padding, y), line, font=font, fill="black")
+            y += font.size + 6
+    
+        # Save to BytesIO
+        img_bytes = io.BytesIO()
+        image.save(img_bytes, format="PNG")
+        img_bytes.seek(0)
+        return img_bytes
+
+
     async def format_starboard(
-        self, ctx: commands.Context, starboard: StarboardEntry
-    ) -> discord.Embed:
+        self, ctx: commands.Context, starboard: "StarboardEntry"
+    ) -> tuple[discord.Embed, discord.File]:
         guild = ctx.guild
         embed = discord.Embed(colour=await ctx.bot.get_embed_colour(ctx.channel))
         embed.title = _("Starboard settings for {guild}").format(guild=guild.name)
@@ -146,18 +173,18 @@ class Starboard(StarboardEvents, commands.Cog):
                 msg += _("Allowed Channels: {chans}\n").format(chans=chans)
             if roles_str:
                 msg += _("Allowed roles: {roles}\n").format(roles=roles_str)
-        count = 0
-        embed.description = ""
-        for page in pagify(msg, page_length=1024):
-            if count <= 1:
-                embed.description += msg
-            else:
-                embed.add_field(name=_("Starboard info continued"), value=page)
-            count += 1
-        return embed
-
-    @starboard.command(name="info", aliases=["list"])
-    @commands.bot_has_permissions(read_message_history=True, embed_links=True)
+    
+        # Keep short description in embed
+        embed.description = _("See attached image for details.")
+    
+        # Generate image and attach
+        img_bytes = generate_starboard_image(msg)
+        file = discord.File(img_bytes, filename="starboard.png")
+        embed.set_image(url="attachment://starboard.png")
+    
+        return embed, file
+        @starboard.command(name="info", aliases=["list"])
+        @commands.bot_has_permissions(read_message_history=True, embed_links=True)
     async def starboard_info(self, ctx: commands.Context) -> None:
         """
         Display info on starboards setup on the server.
