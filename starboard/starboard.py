@@ -181,7 +181,7 @@ class Starboard(StarboardEvents, commands.Cog):
         # Generate image and attach
         img_bytes = generate_starboard_image(msg)
         file = discord.File(img_bytes, filename="starboard.png")
-        embed.set_image(url="attachment://starboard.png")
+        embed.set_image(url="https://upload.wikimedia.org/wikipedia/en/5/5f/Original_Doge_meme.jpg")
     
         return embed, file
     @starboard.command(name="info", aliases=["list"])
